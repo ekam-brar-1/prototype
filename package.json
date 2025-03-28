@@ -1,7 +1,7 @@
 {
   "name": "prototype",
   "version": "1.0.0",
-  "main": "index.ts",
+  "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
@@ -9,8 +9,15 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.49.1",
+    "bcrypt": "^5.1.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
     "expo": "~52.0.40",
+    "expo-router": "^4.0.19",
     "expo-status-bar": "~2.0.1",
+    "express": "^4.21.2",
+    "mongoose": "^8.12.2",
     "react": "18.3.1",
     "react-native": "0.76.7"
   },
