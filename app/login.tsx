@@ -18,7 +18,7 @@ export default function LoginScreen() {
     if (error) {
       console.error("Error logging in:", error.message);
     } else {
-      router.replace("/");
+      router.replace("/tabs");
     }
   };
 

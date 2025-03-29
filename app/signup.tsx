@@ -16,7 +16,7 @@ export default function SignupScreen() {
     if (error) {
       console.error("Error signing up:", error.message);
     } else {
-      router.replace("/");
+      router.replace("/tabs");
     }
   };
   const handleSignup2 = async () => {
