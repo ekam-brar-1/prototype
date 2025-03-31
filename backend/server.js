@@ -11,19 +11,19 @@ app.use(cors());
 
 const PORT = process.env.PORT || 5000;
 
-// MongoDB connection
+
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
     console.log('✅ Connected to MongoDB');
 
-    // Start server **after** DB is connected
+   
     app.listen(PORT, () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);
     });
   })
   .catch(err => console.error('❌ MongoDB connection error:', err));
 
-// MongoDB User Schema
+
 const userSchema = new mongoose.Schema({
   name: String,
   email: { type: String, unique: true },
@@ -31,7 +31,12 @@ const userSchema = new mongoose.Schema({
 });
 const User = mongoose.model("User", userSchema);
 
-// Routes
+const reviewRoutes = require('./routes/reviews');
+const favoriteRoutes = require('./routes/favorites');
+
+app.use('/api/reviews', reviewRoutes);
+app.use('/api/favorites', favoriteRoutes);
+
 app.use('/api/locations', locationsRouter);
 
 app.post("/register", async (req, res) => {
