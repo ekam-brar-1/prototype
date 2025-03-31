@@ -1,8 +1,9 @@
 const mongoose = require('mongoose');
 
 const reviewSchema = new mongoose.Schema({
+  // Store userId as a string because Supabase returns a UUID
   userId: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: String,
     required: true,
   },
   placeId: {

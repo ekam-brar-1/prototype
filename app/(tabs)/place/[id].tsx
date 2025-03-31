@@ -3,47 +3,56 @@ import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, FlatList }
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import AddReviewModal from '../../components/AddReviewModal';
+import { useAuth } from '../../../context/AuthContext';
 
 export default function PlaceDetail() {
-  const { id } = useLocalSearchParams();
+  const { id: placeId } = useLocalSearchParams();
   const router = useRouter();
+  const { user } = useAuth();
+
   const [place, setPlace] = useState(null);
   const [reviews, setReviews] = useState([]);
   const [showReviews, setShowReviews] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
 
   // Fetch place details
   useEffect(() => {
-    axios.get(`http://192.168.1.175:5000/api/locations/${id}`)
-      .then(res => setPlace(res.data))
-      .catch(err => console.error('Failed to fetch place:', err));
-  }, [id]);
+    if (!placeId) return;
+    axios
+      .get(`http://192.168.1.175:5000/api/locations/${placeId}`)
+      .then((res) => setPlace(res.data))
+      .catch((err) => console.error('Failed to fetch place:', err));
+  }, [placeId]);
 
-  // Fetch reviews only when the user expands the review section
+  // Fetch reviews if expanded
   useEffect(() => {
-    if (!id || !showReviews) return;
-    axios.get(`http://192.168.1.175:5000/api/reviews/${id}`)
-      .then(res => setReviews(res.data))
-      .catch(err => console.error('Failed to load reviews:', err));
-  }, [id, showReviews]);
+    if (!placeId || !showReviews) return;
+    fetchReviews();
+  }, [placeId, showReviews]);
 
-  if (!place) return <Text style={styles.loadingText}>Loading...</Text>;
+  const fetchReviews = () => {
+    axios
+      .get(`http://192.168.1.175:5000/api/reviews/${placeId}`)
+      .then((res) => setReviews(res.data))
+      .catch((err) => console.error('Failed to load reviews:', err));
+  };
 
-  // Calculate overall rating from reviews if available; otherwise, use place.rating
-  const overallRating = reviews.length > 0 
-    ? (reviews.reduce((acc, cur) => acc + cur.rating, 0) / reviews.length).toFixed(1)
-    : place.rating;
+  if (!place) return <Text style={{ marginTop: 50, textAlign: 'center' }}>Loading...</Text>;
+
+  const overallRating =
+    reviews.length > 0
+      ? (reviews.reduce((acc, cur) => acc + cur.rating, 0) / reviews.length).toFixed(1)
+      : place.rating || 0;
 
   return (
     <ScrollView style={styles.container}>
-      
       <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
         <Text style={styles.backText}>BACK</Text>
       </TouchableOpacity>
 
-     
       <Image source={{ uri: place.media[0] }} style={styles.mainImage} />
 
-      
       <View style={styles.headerRow}>
         <View style={{ flex: 1 }}>
           <Text style={styles.title}>{place.name}</Text>
@@ -59,13 +68,11 @@ export default function PlaceDetail() {
         </View>
       </View>
 
-      
       <Text style={styles.sectionTitle}>About The Place</Text>
       <View style={styles.sectionCard}>
         <Text style={styles.description}>{place.description}</Text>
       </View>
 
-      {/* Media Gallery */}
       <Text style={styles.sectionTitle}>Media</Text>
       <FlatList
         data={place.media}
@@ -73,12 +80,9 @@ export default function PlaceDetail() {
         showsHorizontalScrollIndicator={false}
         keyExtractor={(item, index) => index.toString()}
         contentContainerStyle={{ paddingLeft: 16 }}
-        renderItem={({ item }) => (
-          <Image source={{ uri: item }} style={styles.thumb} />
-        )}
+        renderItem={({ item }) => <Image source={{ uri: item }} style={styles.thumb} />}
       />
 
-      {/* Overall Reviews Summary & Expand Button */}
       <TouchableOpacity onPress={() => setShowReviews(!showReviews)} style={styles.reviewSummary}>
         <View style={styles.row}>
           <Ionicons name="star" size={16} color="tomato" />
@@ -92,14 +96,13 @@ export default function PlaceDetail() {
         </Text>
       </TouchableOpacity>
 
-      {/* Show Detailed Reviews if Expanded */}
       {showReviews && (
         <>
           {reviews.length === 0 ? (
             <Text style={styles.noReviewsText}>No reviews yet.</Text>
           ) : (
-            reviews.map((review, index) => (
-              <View key={index} style={styles.reviewCard}>
+            reviews.map((review, idx) => (
+              <View key={idx} style={styles.reviewCard}>
                 <View style={styles.reviewHeader}>
                   <Image
                     source={{ uri: 'https://cdn-icons-png.flaticon.com/512/147/147144.png' }}
@@ -107,7 +110,9 @@ export default function PlaceDetail() {
                   />
                   <View style={styles.reviewHeaderText}>
                     <Text style={styles.userName}>User</Text>
-                    <Text style={styles.date}>{new Date(review.createdAt).toLocaleString()}</Text>
+                    <Text style={styles.date}>
+                      {new Date(review.createdAt).toLocaleString()}
+                    </Text>
                   </View>
                   <View style={styles.reviewRating}>
                     <Ionicons name="star" size={16} color="tomato" />
@@ -119,11 +124,21 @@ export default function PlaceDetail() {
             ))
           )}
 
-          {/* Add Review Button */}
-          <TouchableOpacity onPress={() => router.push(`/review/add/${id}`)} style={styles.addButton}>
+          <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.addButton}>
             <Text style={styles.addButtonText}>Add Review</Text>
           </TouchableOpacity>
         </>
+      )}
+
+      {/* Add Review Modal */}
+      {user?.id && (
+        <AddReviewModal
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)}
+          placeId={placeId?.toString()}
+          userId={user.id}
+          onSubmitSuccess={() => fetchReviews()}
+        />
       )}
     </ScrollView>
   );
@@ -131,7 +146,6 @@ export default function PlaceDetail() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
-  loadingText: { textAlign: 'center', marginTop: 50, fontSize: 16 },
   backButton: {
     marginTop: 40,
     marginLeft: 16,
@@ -151,7 +165,12 @@ const styles = StyleSheet.create({
     borderColor: '#4b60e6',
     alignSelf: 'center',
   },
-  headerRow: { flexDirection: 'row', alignItems: 'flex-start', marginHorizontal: 16, marginBottom: 10 },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginHorizontal: 16,
+    marginBottom: 10,
+  },
   title: { fontSize: 18, fontWeight: '700' },
   location: { marginLeft: 6, fontSize: 13, color: '#666' },
   row: { flexDirection: 'row', alignItems: 'center', marginTop: 4 },
@@ -180,7 +199,13 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   description: { fontSize: 14, color: '#333' },
-  thumb: { width: 100, height: 100, borderRadius: 12, marginRight: 10, marginTop: 10 },
+  thumb: {
+    width: 100,
+    height: 100,
+    borderRadius: 12,
+    marginRight: 10,
+    marginTop: 10,
+  },
   reviewSummary: {
     backgroundColor: '#f2f2f2',
     marginHorizontal: 16,
@@ -195,15 +220,6 @@ const styles = StyleSheet.create({
   reviewCount: { marginLeft: 6, fontSize: 13, color: '#555' },
   viewReviewsText: { fontSize: 14, color: '#704ecb', fontWeight: '600' },
   noReviewsText: { textAlign: 'center', color: '#888', marginVertical: 10 },
-  addButton: {
-    backgroundColor: '#704ecb',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 10,
-    alignSelf: 'center',
-    marginVertical: 20,
-  },
-  addButtonText: { color: '#fff', fontWeight: '600' },
   reviewCard: {
     backgroundColor: '#fff',
     padding: 12,
@@ -224,4 +240,13 @@ const styles = StyleSheet.create({
   reviewRating: { flexDirection: 'row', alignItems: 'center', marginLeft: 'auto' },
   reviewRatingText: { marginLeft: 4, fontWeight: '600', fontSize: 14 },
   comment: { fontSize: 13, color: '#333' },
+  addButton: {
+    backgroundColor: '#704ecb',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    alignSelf: 'center',
+    marginVertical: 20,
+  },
+  addButtonText: { color: '#fff', fontWeight: '600' },
 });
