@@ -20,7 +20,7 @@ export default function PlaceDetail() {
   useEffect(() => {
     if (!placeId) return;
     axios
-      .get(`http://192.168.1.175:5000/api/locations/${placeId}`)
+      .get(`http://${process.env.ipv4}:5000/api/locations/${placeId}`)
       .then((res) => setPlace(res.data))
       .catch((err) => console.error('Failed to fetch place:', err));
   }, [placeId]);
@@ -33,7 +33,7 @@ export default function PlaceDetail() {
 
   const fetchReviews = () => {
     axios
-      .get(`http://192.168.1.175:5000/api/reviews/${placeId}`)
+      .get(`http://${process.env.ipv4}:5000/api/reviews/${placeId}`)
       .then((res) => setReviews(res.data))
       .catch((err) => console.error('Failed to load reviews:', err));
   };

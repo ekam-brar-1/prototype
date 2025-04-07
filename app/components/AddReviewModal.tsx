@@ -33,22 +33,22 @@ export default function AddReviewModal({
   };
 
   const handleSubmit = async () => {
-    // Validate rating and comment before submitting
+    
     if (!rating || comment.trim() === '') {
       console.warn('Please provide both a rating and a comment.');
       return;
     }
 
     try {
-      // Create payload with valid IDs (ensure these are complete valid strings)
+      
       const payload = {
-        userId: userId,   // e.g., "184f2e00-6770-4309-9518-41911e131389"
-        placeId: placeId, // e.g., "67e72e529e844f05bf8c4545"
+        userId: userId,   
+        placeId: placeId, 
         rating,
         comment,
       };
-      // Updated endpoint without ":placeId"
-      await axios.post('http://192.168.1.175:5000/api/reviews', payload);
+      
+      await axios.post(`http://${process.env.ipv4}:5000/api/reviews`, payload);
       // Clear fields and call success callback
       setRating(0);
       setComment('');

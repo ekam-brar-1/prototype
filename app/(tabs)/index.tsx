@@ -12,6 +12,7 @@ import {
 import { useRouter } from 'expo-router';
 import axios from 'axios';
 import { Ionicons } from '@expo/vector-icons';
+import * as network from 'expo-network';
 
 export default function HomeScreen() {
   const [locations, setLocations] = useState([]);
@@ -20,7 +21,7 @@ const router = useRouter();
 
   useEffect(() => {
     axios
-      .get('http://192.168.1.175:5000/api/locations')
+      .get(`http://${process.env.ipv4}:5000/api/locations`)
       .then((res) => setLocations(res.data))
       .catch((err) => console.error(err))
       .finally(() => setLoading(false));

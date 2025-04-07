@@ -16,12 +16,12 @@ export default function SignupScreen() {
     if (error) {
       console.error("Error signing up:", error.message);
     } else {
-      router.replace("/tabs");
+      router.replace("/(tabs)");
     }
   };
   const handleSignup2 = async () => {
     try {
-      const response = await fetch("http://192.168.1.175:5000/register", {
+      const response = await fetch(`http://${process.env.ipv4}:5000/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password }),
