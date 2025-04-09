@@ -1,10 +1,10 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, FlatList } from 'react-native';
+import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, FlatList, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import AddReviewModal from '../../components/AddReviewModal';
-import { useAuth } from '../../../context/AuthContext';
+import AddReviewModal from '../components/AddReviewModal';
+import { useAuth } from '../../context/AuthContext';
 
 export default function PlaceDetail() {
   const { id: placeId } = useLocalSearchParams();
@@ -15,17 +15,41 @@ export default function PlaceDetail() {
   const [reviews, setReviews] = useState([]);
   const [showReviews, setShowReviews] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
 
   // Fetch place details
   useEffect(() => {
     if (!placeId) return;
     axios
-      .get(`http://${process.env.ipv4}:5000/api/locations/${placeId}`)
+      .get(`http://${process.env.EXPO_PUBLIC_IPV4}:5000/api/locations/${placeId}`)
       .then((res) => setPlace(res.data))
       .catch((err) => console.error('Failed to fetch place:', err));
   }, [placeId]);
+const removeFavorite = async () => {
+  if (!user) {
+    Alert.alert('Please login to remove favorites');
+    return;
+  }
+  try {
+    await axios.delete(`http://${process.env.EXPO_PUBLIC_IPV4}:5000/api/favorites`, {
+      data: {
+        userId: user.id,
+        placeId: placeId,
+      }
+    });
+    Alert.alert('Removed from favorites');
+    setIsFavorite(false);
+  } catch (err: any) {
+    if (err.response && err.response.data?.error) {
+      Alert.alert(err.response.data.error);
+    } else {
+      Alert.alert('Failed to remove from favorites');
+      console.error('Error removing favorite:', err);
+    }
+  }
+};
 
-  // Fetch reviews if expanded
+  // Fetch reviews when reviews are toggled on.
   useEffect(() => {
     if (!placeId || !showReviews) return;
     fetchReviews();
@@ -33,17 +57,59 @@ export default function PlaceDetail() {
 
   const fetchReviews = () => {
     axios
-      .get(`http://${process.env.ipv4}:5000/api/reviews/${placeId}`)
+      .get(`http://${process.env.EXPO_PUBLIC_IPV4}:5000/api/reviews/${placeId}`)
       .then((res) => setReviews(res.data))
       .catch((err) => console.error('Failed to load reviews:', err));
   };
+  fetchReviews();
 
-  if (!place) return <Text style={{ marginTop: 50, textAlign: 'center' }}>Loading...</Text>;
+  // Check if the place is already a favorite
+  useEffect(() => {
+    if (user && placeId) {
+      axios
+        .get(`http://${process.env.EXPO_PUBLIC_IPV4}:5000/api/favorites/${user.id}`)
+        .then((res) => {
+          // Assuming the favorite object has a populated "placeId" field with an _id property.
+          const favExists = res.data.some(
+            (fav) => fav.placeId && fav.placeId._id === placeId
+          );
+          setIsFavorite(favExists);
+        })
+        .catch((err) => console.error('Failed to fetch favorites:', err));
+    }
+  }, [user, placeId]);
+
+  // Add current place to favorites
+  const addFavorite = async () => {
+    if (!user) {
+      Alert.alert('Please login to add favorites');
+      return;
+    }
+    try {
+      const response = await axios.post(`http://${process.env.EXPO_PUBLIC_IPV4}:5000/api/favorites`, {
+        userId: user.id,
+        placeId: placeId,
+      });
+      Alert.alert('Added to favorites');
+      setIsFavorite(true);
+    } catch (err: any) {
+      if (err.response && err.response.data?.error === 'Already in favorites') {
+        Alert.alert('This place is already in your favorites.');
+        setIsFavorite(true);
+      } else {
+        Alert.alert('Failed to add to favorites');
+        console.error('Error adding favorite:', err);
+      }
+    }
+  };
+
+  if (!place)
+    return <Text style={{ marginTop: 50, textAlign: 'center' }}>Loading...</Text>;
 
   const overallRating =
     reviews.length > 0
       ? (reviews.reduce((acc, cur) => acc + cur.rating, 0) / reviews.length).toFixed(1)
-      : place.rating || 0;
+      : 'No reviews' || 0;
 
   return (
     <ScrollView style={styles.container}>
@@ -64,7 +130,15 @@ export default function PlaceDetail() {
         <View style={styles.row}>
           <Ionicons name="star" size={16} color="tomato" />
           <Text style={styles.rating}>{overallRating}</Text>
-          <Ionicons name="heart-outline" size={20} color="#555" style={{ marginLeft: 10 }} />
+          {/* Wrap heart icon in TouchableOpacity */}
+<TouchableOpacity onPress={isFavorite ? removeFavorite : addFavorite}>
+  <Ionicons
+    name={isFavorite ? "heart" : "heart-outline"}
+    size={20}
+    style={{ marginLeft: 10, color: isFavorite ? "red" : "#888" }}
+  />
+</TouchableOpacity>
+
         </View>
       </View>
 

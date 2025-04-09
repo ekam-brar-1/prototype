@@ -48,8 +48,8 @@ export default function AddReviewModal({
         comment,
       };
       
-      await axios.post(`http://${process.env.ipv4}:5000/api/reviews`, payload);
-      // Clear fields and call success callback
+      await axios.post(`http://${process.env.EXPO_PUBLIC_IPV4}:5000/api/reviews`, payload);
+      
       setRating(0);
       setComment('');
       onSubmitSuccess();

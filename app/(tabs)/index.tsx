@@ -3,7 +3,7 @@ import {
   View,
   Text,
   FlatList,
-    TouchableOpacity,
+  TouchableOpacity,
   Image,
   ActivityIndicator,
   StyleSheet,
@@ -17,17 +17,42 @@ import * as network from 'expo-network';
 export default function HomeScreen() {
   const [locations, setLocations] = useState([]);
   const [loading, setLoading] = useState(true);
-const router = useRouter();
+  const router = useRouter();
 
+  // Fetch all locations and compute average rating from reviews for each one.
   useEffect(() => {
     axios
-      .get(`http://${process.env.ipv4}:5000/api/locations`)
-      .then((res) => setLocations(res.data))
+      .get(`http://${process.env.EXPO_PUBLIC_IPV4}:5000/api/locations`)
+      .then(async (res) => {
+        const locs = res.data;
+        // For each location, fetch its reviews and calculate average rating
+        const updatedLocations = await Promise.all(
+  locs.map(async (loc) => {
+    try {
+      const reviewRes = await axios.get(`http://${process.env.EXPO_PUBLIC_IPV4}:5000/api/reviews/${loc._id}`);
+      const reviews = reviewRes.data;
+      const averageRating =
+        reviews.length > 0
+          ? (reviews.reduce((acc, cur) => acc + cur.rating, 0) / reviews.length).toFixed(1)
+          : "No reviews yet";
+      return { ...loc, rating: averageRating };
+    } catch (error) {
+      console.error("Error fetching reviews for", loc._id, error);
+      return { ...loc, rating: "No reviews yet" };
+    }
+  })
+);
+
+        setLocations(updatedLocations);
+      })
       .catch((err) => console.error(err))
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <ActivityIndicator size="large" style={{ marginTop: 100 }} />;
+  console.log(process.env.EXPO_PUBLIC_IPV4);
+
+  if (loading)
+    return <ActivityIndicator size="large" style={{ marginTop: 100 }} />;
 
   return (
     <View style={styles.container}>
@@ -45,23 +70,22 @@ const router = useRouter();
         keyExtractor={(item) => item._id}
         contentContainerStyle={{ paddingBottom: 100 }}
         renderItem={({ item }) => (
-            <TouchableOpacity onPress={() => router.push(`/place/${item._id}`)}>
-           
-          <View style={styles.card}>
-            <Image source={{ uri: item.media[0] }} style={styles.cardImage} />
-            <View style={{ flex: 1 }}>
-              <Text style={styles.cardTitle}>{item.name}</Text>
-              <View style={styles.iconRow}>
-                <Ionicons name="location" size={16} color="tomato" />
-                <Text style={styles.cardText}>{item.location}</Text>
-              </View>
-              <View style={styles.iconRow}>
-                <Ionicons name="star" size={16} color="tomato" />
-                <Text style={styles.cardText}>{item.rating}</Text>
+          <TouchableOpacity onPress={() => router.push(`./place/${item._id}`)}>
+            <View style={styles.card}>
+              <Image source={{ uri: item.media[0] }} style={styles.cardImage} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.cardTitle}>{item.name}</Text>
+                <View style={styles.iconRow}>
+                  <Ionicons name="location" size={16} color="tomato" />
+                  <Text style={styles.cardText}>{item.location}</Text>
+                </View>
+                <View style={styles.iconRow}>
+                  <Ionicons name="star" size={16} color="tomato" />
+                  <Text style={styles.cardText}>{item.rating}</Text>
+                </View>
               </View>
             </View>
-          </View>
-            </TouchableOpacity>
+          </TouchableOpacity>
         )}
       />
     </View>
