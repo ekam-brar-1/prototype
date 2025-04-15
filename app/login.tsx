@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { View, Text, TextInput, Pressable, StyleSheet } from "react-native";
+import { View, Text, TextInput, Pressable, StyleSheet, Alert } from "react-native";
 import { supabase } from "../lib/supabaseclient";
 import { useRouter } from "expo-router";
 
@@ -9,16 +9,26 @@ export default function LoginScreen() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleLogin = async () => {
+    if (!email || !password) {
+      setErrorMessage("Please enter both email and password.");
+      Alert.alert("Error", "Please enter both email and password.");
+      return;
+    }
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
     if (error) {
-      console.error("Error logging in:", error.message);
+      setErrorMessage("Failed to sign in: " + error.message);
+      Alert.alert("Login Error", "Failed to sign in: " + error.message);
     } else {
-      router.replace("/(tabs)");
+      setErrorMessage("");
+      Alert.alert("Success", "Logged in successfully!", [
+        { text: "OK", onPress: () => router.replace("/(tabs)") }
+      ]);
     }
   };
 
@@ -28,6 +38,7 @@ export default function LoginScreen() {
       <Text style={styles.brand}>HANDS ON TOURING</Text>
       <Text style={styles.signin}>Sign In</Text>
       <View style={styles.card}>
+        {errorMessage !== "" && <Text style={styles.error}>{errorMessage}</Text>}
         <Text>Email</Text>
         <TextInput
           style={styles.input}
@@ -65,14 +76,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 16,
   },
-  welcome: { fontSize: 18, fontWeight: "500" },
+  welcome: {
+    fontSize: 18,
+    fontWeight: "500",
+  },
   brand: {
     fontSize: 20,
     color: "#6a4fc8",
     fontWeight: "bold",
     marginBottom: 10,
   },
-  signin: { marginBottom: 10 },
+  signin: {
+    marginBottom: 10,
+  },
   card: {
     width: "100%",
     padding: 20,
@@ -95,7 +111,22 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     marginBottom: 10,
   },
-  buttonText: { color: "white", fontWeight: "600" },
-  link: { color: "#6a4fc8", marginTop: 4, textAlign: "center" },
-  footerText: { marginTop: 10, textAlign: "center" },
+  buttonText: {
+    color: "white",
+    fontWeight: "600",
+  },
+  link: {
+    color: "#6a4fc8",
+    marginTop: 4,
+    textAlign: "center",
+  },
+  footerText: {
+    marginTop: 10,
+    textAlign: "center",
+  },
+  error: {
+    color: "red",
+    marginBottom: 10,
+    textAlign: "center",
+  },
 });

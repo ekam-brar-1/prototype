@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { View, Text, TextInput, Pressable, StyleSheet } from "react-native";
+import { View, Text, TextInput, Pressable, StyleSheet, Alert } from "react-native";
 import { supabase } from "../lib/supabaseclient";
 import { useRouter } from "expo-router";
 
@@ -9,16 +9,28 @@ export default function SignupScreen() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [name, setName] = useState("");
 
   const handleSignup = async () => {
+    if (!name) {
+      Alert.alert("Error", "Name must be filled.");
+      return;
+    }
+    if (password !== confirmPassword) {
+      Alert.alert("Error", "Passwords do not match.");
+      return;
+    }
     const { error } = await supabase.auth.signUp({ email, password });
     if (error) {
-      console.error("Error signing up:", error.message);
+      Alert.alert("Error Signing Up", error.message);
     } else {
-      router.replace("/(tabs)");
+      Alert.alert("Success", "Registered successfully!", [
+        { text: "OK", onPress: () => router.replace("/(tabs)") }
+      ]);
     }
   };
+
   const handleSignup2 = async () => {
     try {
       const response = await fetch(`http://${process.env.ipv4}:5000/register`, {
@@ -32,21 +44,18 @@ export default function SignupScreen() {
       console.log(err);
     }
   };
+
   const handleSignup3 = () => {
     handleSignup();
     handleSignup2();
   };
+
   return (
     <View style={styles.container}>
-      <Pressable
-        style={styles.backButton}
-        onPress={() => router.push("/login")}
-      >
+      <Pressable style={styles.backButton} onPress={() => router.push("/login")}>
         <Text style={styles.backText}>BACK</Text>
       </Pressable>
-      <Text style={styles.fillDetails}>
-        Fill the details below for registration
-      </Text>
+      <Text style={styles.fillDetails}>Fill the details below for registration</Text>
       <View style={styles.card}>
         <Text>Email</Text>
         <TextInput
@@ -62,6 +71,14 @@ export default function SignupScreen() {
           secureTextEntry
           value={password}
           onChangeText={setPassword}
+        />
+        <Text>Confirm Password</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Retype Password"
+          secureTextEntry
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
         />
         <Text>Name</Text>
         <TextInput
