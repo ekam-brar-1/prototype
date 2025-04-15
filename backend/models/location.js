@@ -8,7 +8,7 @@ const locationSchema = new mongoose.Schema({
   location: String,
   rating: Number,
   description: String,
-  media: [String], // Cloudinary URLs
+  media: [String], 
 }, {
   timestamps: true
 });

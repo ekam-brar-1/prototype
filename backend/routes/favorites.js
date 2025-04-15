@@ -3,7 +3,6 @@ const mongoose = require('mongoose');
 const router = express.Router();
 const Favorite = require('../models/Favorite');
 
-// Add to favorites
 router.post('/', async (req, res) => {
   const { userId, placeId } = req.body;
   try {
@@ -11,7 +10,7 @@ router.post('/', async (req, res) => {
     if (existing) return res.status(400).json({ error: 'Already in favorites' });
 
     const favorite = new Favorite({ 
-      userId: userId, // userId remains a string since you're using UUIDs
+      userId: userId, 
       placeId: new mongoose.Types.ObjectId(placeId)
     });
 
@@ -23,7 +22,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Remove from favorites
+
 router.delete('/', async (req, res) => {
   const { userId, placeId } = req.body;
   if (!userId || !placeId) {
@@ -44,7 +43,7 @@ router.delete('/', async (req, res) => {
   }
 });
 
-// Get all favorites for a given user
+
 router.get('/:userId', async (req, res) => {
   try {
     const favorites = await Favorite.find({ userId: req.params.userId }).populate('placeId');

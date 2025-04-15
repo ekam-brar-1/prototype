@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Location = require('../models/Location');
 
-// Get all locations
+
 router.get('/', async (req, res) => {
   try {
     const locations = await Location.find();
@@ -12,7 +12,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-// ✅ Get a single location by ID
 router.get('/:id', async (req, res) => {
   try {
     const location = await Location.findById(req.params.id);

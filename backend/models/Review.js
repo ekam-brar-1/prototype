@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const reviewSchema = new mongoose.Schema({
-  // Store userId as a string because Supabase returns a UUID
+ 
   userId: {
     type: String,
     required: true,

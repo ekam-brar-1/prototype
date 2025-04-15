@@ -69,7 +69,7 @@ const removeFavorite = async () => {
       axios
         .get(`http://${process.env.EXPO_PUBLIC_IPV4}:5000/api/favorites/${user.id}`)
         .then((res) => {
-          // Assuming the favorite object has a populated "placeId" field with an _id property.
+         
           const favExists = res.data.some(
             (fav) => fav.placeId && fav.placeId._id === placeId
           );
@@ -79,7 +79,7 @@ const removeFavorite = async () => {
     }
   }, [user, placeId]);
 
-  // Add current place to favorites
+
   const addFavorite = async () => {
     if (!user) {
       Alert.alert('Please login to add favorites');
@@ -130,7 +130,7 @@ const removeFavorite = async () => {
         <View style={styles.row}>
           <Ionicons name="star" size={16} color="tomato" />
           <Text style={styles.rating}>{overallRating}</Text>
-          {/* Wrap heart icon in TouchableOpacity */}
+
 <TouchableOpacity onPress={isFavorite ? removeFavorite : addFavorite}>
   <Ionicons
     name={isFavorite ? "heart" : "heart-outline"}
@@ -204,7 +204,6 @@ const removeFavorite = async () => {
         </>
       )}
 
-      {/* Add Review Modal */}
       {user?.id && (
         <AddReviewModal
           visible={modalVisible}

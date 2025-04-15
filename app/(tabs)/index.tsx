@@ -19,13 +19,12 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  // Fetch all locations and compute average rating from reviews for each one.
   useEffect(() => {
     axios
       .get(`http://${process.env.EXPO_PUBLIC_IPV4}:5000/api/locations`)
       .then(async (res) => {
         const locs = res.data;
-        // For each location, fetch its reviews and calculate average rating
+       
         const updatedLocations = await Promise.all(
   locs.map(async (loc) => {
     try {

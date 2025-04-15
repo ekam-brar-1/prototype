@@ -13,9 +13,9 @@ import axios from 'axios';
 interface AddReviewModalProps {
   visible: boolean;
   onClose: () => void;
-  placeId: string; // Valid 24-character ObjectId string for the place
-  userId: string;  // Should be a valid ID string (e.g., a UUID)
-  onSubmitSuccess: () => void; // Callback to refresh reviews in the parent screen
+  placeId: string; 
+  userId: string;  
+  onSubmitSuccess: () => void;
 }
 
 export default function AddReviewModal({
@@ -63,14 +63,14 @@ export default function AddReviewModal({
     <Modal visible={visible} transparent animationType="fade">
       <View style={styles.modalOverlay}>
         <View style={styles.modalContainer}>
-          {/* Close Button */}
+       
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
             <Text style={styles.closeText}>BACK</Text>
           </TouchableOpacity>
 
           <Text style={styles.modalTitle}>Add Review</Text>
 
-          {/* Star Rating */}
+      
           <View style={styles.starContainer}>
             {[1, 2, 3, 4, 5].map(num => (
               <TouchableOpacity key={num} onPress={() => handleStarPress(num)}>
@@ -84,7 +84,7 @@ export default function AddReviewModal({
             ))}
           </View>
 
-          {/* Comment Input */}
+         
           <Text style={styles.label}>Add Comment:</Text>
           <TextInput
             style={styles.commentInput}
@@ -96,7 +96,7 @@ export default function AddReviewModal({
             onChangeText={setComment}
           />
 
-          {/* Submit Button */}
+        
           <TouchableOpacity onPress={handleSubmit} style={styles.submitButton}>
             <Text style={styles.submitButtonText}>Submit</Text>
           </TouchableOpacity>

@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Review = require('../models/Review');
 
-// POST a new review
+
 router.post('/', async (req, res) => {
   const { userId, placeId, rating, comment } = req.body;
 
@@ -16,7 +16,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-// GET reviews by place ID
+
 router.get('/:placeId', async (req, res) => {
   try {
     const reviews = await Review.find({ placeId: req.params.placeId });
