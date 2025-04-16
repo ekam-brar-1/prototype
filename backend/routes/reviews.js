@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const Review = require('../models/Review');
 
-
 router.post('/', async (req, res) => {
   const { userId, placeId, rating, comment } = req.body;
 
@@ -19,7 +18,8 @@ router.post('/', async (req, res) => {
 
 router.get('/:placeId', async (req, res) => {
   try {
-    const reviews = await Review.find({ placeId: req.params.placeId });
+    const reviews = await Review.find({ placeId: req.params.placeId })
+      .populate('userId', 'name'); 
     res.json(reviews);
   } catch (err) {
     console.error('Error fetching reviews:', err);

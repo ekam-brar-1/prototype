@@ -3,9 +3,11 @@ const mongoose = require('mongoose');
 const reviewSchema = new mongoose.Schema({
  
   userId: {
-    type: String,
-    required: true,
-  },
+ type: String,
+  required: true,
+
+},
+
   placeId: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,

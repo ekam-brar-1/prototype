@@ -33,7 +33,7 @@ export default function SignupScreen() {
 
   const handleSignup2 = async () => {
     try {
-      const response = await fetch(`http://${process.env.ipv4}:5000/register`, {
+      const response = await fetch(`http://${process.env.EXPO_PUBLIC_IPV4}:5000/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password }),

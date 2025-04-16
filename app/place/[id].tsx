@@ -17,7 +17,7 @@ export default function PlaceDetail() {
   const [modalVisible, setModalVisible] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
 
-  // Fetch place details
+
   useEffect(() => {
     if (!placeId) return;
     axios
@@ -49,7 +49,6 @@ const removeFavorite = async () => {
   }
 };
 
-  // Fetch reviews when reviews are toggled on.
   useEffect(() => {
     if (!placeId || !showReviews) return;
     fetchReviews();
@@ -63,7 +62,7 @@ const removeFavorite = async () => {
   };
   fetchReviews();
 
-  // Check if the place is already a favorite
+ 
   useEffect(() => {
     if (user && placeId) {
       axios
@@ -183,7 +182,9 @@ const removeFavorite = async () => {
                     style={styles.avatar}
                   />
                   <View style={styles.reviewHeaderText}>
-                    <Text style={styles.userName}>User</Text>
+     <Text style={styles.userName}>{review.userId?.name || "User"}</Text>
+
+
                     <Text style={styles.date}>
                       {new Date(review.createdAt).toLocaleString()}
                     </Text>
